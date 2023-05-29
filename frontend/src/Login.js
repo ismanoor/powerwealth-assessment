@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import swal from "sweetalert";
 import { Button, TextField, Link } from "@material-ui/core";
 import { withRouter } from "./utils";
@@ -13,6 +13,8 @@ class Login extends React.Component {
       username: '',
       password: ''
     };
+    
+
   }
 
   onChange = (e) => this.setState({ [e.target.name]: e.target.value });
@@ -24,8 +26,7 @@ class Login extends React.Component {
       username: this.state.username,
       password: pwd,
     }).then((res) => {
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user_id', res.data.id);
+      sessionStorage.setItem('CREDENTIALS_TOKEN', res.data.token);
       // this.props.history.push('/dashboard');
       this.props.navigate("/dashboard");
     }).catch((err) => {
@@ -74,7 +75,7 @@ class Login extends React.Component {
             variant="contained"
             color="primary"
             size="small"
-            disabled={this.state.username == '' && this.state.password == ''}
+            disabled={this.state.username === '' && this.state.password === ''}
             onClick={this.login}
           >
             Login

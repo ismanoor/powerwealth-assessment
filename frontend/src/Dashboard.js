@@ -13,7 +13,7 @@ class Dashboard extends Component {
   constructor() {
     super();
     this.state = {
-      token: '',
+      CREDENTIALS_TOKEN: '',
       openProductModal: false,
       openProductEditModal: false,
       id: '',
@@ -29,18 +29,49 @@ class Dashboard extends Component {
       pages: 0,
       loading: false
     };
+    window.addEventListener('storage', (event) => {
+      const credentials = sessionStorage.getItem('CREDENTIALS_TOKEN')
+      if(event.key === 'REQUESTING_SHARED_CREDENTIALS' && credentials) {
+        console.log("its working")
+        localStorage.setItem('CREDENTIALS_SHARING', credentials)
+        localStorage.removeItem('CREDENTIALS_SHARING')
+      }
+      if(event.key === 'CREDENTIALS_SHARING' && !credentials){
+        console.log("logout")
+        window.sessionStorage.setItem('CREDENTIALS_TOKEN', event.newValue)
+      }
+    }) 
   }
 
   componentDidMount = () => {
-    let token = localStorage.getItem('token');
+
+    localStorage.setItem('REQUESTING_SHARED_CREDENTIALS', Date.now().toString())
+    localStorage.removeItem('REQUESTING_SHARED_CREDENTIALS')
+
+    let token = sessionStorage.getItem('CREDENTIALS_TOKEN');
     if (!token) {
       // this.props.history.push('/login');
       this.props.navigate("/login");
     } else {
-      this.setState({ token: token }, () => {
+      this.setState({ CREDENTIALS_TOKEN: token }, () => {
         this.getProduct();
       });
     }
+  }
+
+  componentWillUnmount  = () => {
+    window.removeEventListener('storage', (event) => {
+      const credentials = sessionStorage.getItem('CREDENTIALS_TOKEN')
+      if(event.key === 'REQUESTING_SHARED_CREDENTIALS' && credentials) {
+        console.log("its working")
+        localStorage.setItem('CREDENTIALS_SHARING', credentials)
+        localStorage.removeItem('CREDENTIALS_SHARING')
+      }
+      if(event.key === 'CREDENTIALS_SHARING' && !credentials){
+        console.log("logout")
+        window.sessionStorage.setItem('CREDENTIALS_TOKEN', event.newValue)
+      }
+    }) 
   }
 
   getProduct = () => {
@@ -54,7 +85,7 @@ class Dashboard extends Component {
     }
     axios.get(`http://localhost:2000/get-product${data}`, {
       headers: {
-        'token': this.state.token
+        'CREDENTIALS_TOKEN': this.state.token
       }
     }).then((res) => {
       this.setState({ loading: false, products: res.data.products, pages: res.data.pages });
@@ -74,7 +105,7 @@ class Dashboard extends Component {
     }, {
       headers: {
         'Content-Type': 'application/json',
-        'token': this.state.token
+        'CREDENTIALS_TOKEN': this.state.token
       }
     }).then((res) => {
 
@@ -103,9 +134,9 @@ class Dashboard extends Component {
   }
 
   logOut = () => {
-    localStorage.setItem('token', null);
-    // this.props.history.push('/');
+    sessionStorage.setItem('CREDENTIALS_TOKEN', null);
     this.props.navigate("/");
+    window.location.reload()
   }
 
   onChange = (e) => {
@@ -123,7 +154,6 @@ class Dashboard extends Component {
   addProduct = () => {
     const fileInput = document.querySelector("#fileInput");
     const file = new FormData();
-    file.append('file', fileInput.files[0]);
     file.append('name', this.state.name);
     file.append('desc', this.state.desc);
     file.append('discount', this.state.discount);
@@ -132,7 +162,7 @@ class Dashboard extends Component {
     axios.post('http://localhost:2000/add-product', file, {
       headers: {
         'content-type': 'multipart/form-data',
-        'token': this.state.token
+        'CREDENTIALS_TOKEN': this.state.token
       }
     }).then((res) => {
 
@@ -161,7 +191,6 @@ class Dashboard extends Component {
     const fileInput = document.querySelector("#fileInput");
     const file = new FormData();
     file.append('id', this.state.id);
-    file.append('file', fileInput.files[0]);
     file.append('name', this.state.name);
     file.append('desc', this.state.desc);
     file.append('discount', this.state.discount);
@@ -170,7 +199,7 @@ class Dashboard extends Component {
     axios.post('http://localhost:2000/update-product', file, {
       headers: {
         'content-type': 'multipart/form-data',
-        'token': this.state.token
+        'CREDENTIALS_TOKEN': this.state.token
       }
     }).then((res) => {
 

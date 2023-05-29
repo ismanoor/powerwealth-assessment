@@ -3,6 +3,8 @@ import swal from "sweetalert";
 import { Button, TextField, Link } from "@material-ui/core";
 import { withRouter } from "./utils";
 const axios = require("axios");
+const bcrypt = require("bcryptjs");
+var salt = bcrypt.genSaltSync(10);
 
 class Register extends React.Component {
   constructor(props) {
@@ -20,7 +22,7 @@ class Register extends React.Component {
 
     axios.post('http://localhost:2000/register', {
       username: this.state.username,
-      password: this.state.password,
+      password: bcrypt.hashSync(this.state.password, salt),
     }).then((res) => {
       swal({
         text: res.data.title,

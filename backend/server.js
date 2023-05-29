@@ -81,7 +81,7 @@ app.post("/login", (req, res) => {
       user.find({ username: req.body.username }, (err, data) => {
         if (data.length > 0) {
 
-          if (bcrypt.compareSync(data[0].password, req.body.password)) {
+          if (bcrypt.compare(data[0].password, req.body.password)) {
             checkUserAndGenerateToken(data[0], req, res);
           } else {
 
@@ -183,14 +183,13 @@ function checkUserAndGenerateToken(data, req, res) {
 /* Api to add Product */
 app.post("/add-product", upload.any(), (req, res) => {
   try {
-    if (req.files && req.body && req.body.name && req.body.desc && req.body.price &&
+    if (req.body && req.body.name && req.body.desc && req.body.price &&
       req.body.discount) {
 
       let new_product = new product();
       new_product.name = req.body.name;
       new_product.desc = req.body.desc;
       new_product.price = req.body.price;
-      new_product.image = req.files[0].filename;
       new_product.discount = req.body.discount;
       new_product.user_id = req.user.id;
       new_product.save((err, data) => {
@@ -214,6 +213,7 @@ app.post("/add-product", upload.any(), (req, res) => {
       });
     }
   } catch (e) {
+    console.log(e)
     res.status(400).json({
       errorMessage: 'Something went wrong!',
       status: false
@@ -224,20 +224,11 @@ app.post("/add-product", upload.any(), (req, res) => {
 /* Api to update Product */
 app.post("/update-product", upload.any(), (req, res) => {
   try {
-    if (req.files && req.body && req.body.name && req.body.desc && req.body.price &&
+    if ( req.body && req.body.name && req.body.desc && req.body.price &&
       req.body.id && req.body.discount) {
 
       product.findById(req.body.id, (err, new_product) => {
 
-        // if file already exist than remove it
-        if (req.files && req.files[0] && req.files[0].filename && new_product.image) {
-          var path = `./uploads/${new_product.image}`;
-          fs.unlinkSync(path);
-        }
-
-        if (req.files && req.files[0] && req.files[0].filename) {
-          new_product.image = req.files[0].filename;
-        }
         if (req.body.name) {
           new_product.name = req.body.name;
         }
